@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import pulumi
+from config import ServiceConfig
 from pulumi_docker import Container, ContainerArgs, RemoteImage
-from services import ServiceConfig, ServiceDict, services
-from typing import cast
+from services import get_local_services, get_remote_services
 
 
 def create_resources(service_cfg: ServiceConfig) -> tuple[RemoteImage, Container]:
@@ -33,6 +33,12 @@ def create_resources(service_cfg: ServiceConfig) -> tuple[RemoteImage, Container
 
 def main() -> None:
     """Create resources for each service in the services list."""
+    # Get services based on environment or configuration
+    services = [
+        *get_local_services(),  # Local services
+        *get_remote_services()  # Remote services
+    ]
+
     for service_dict in services:
         # Convert the flattened config to ServiceConfig
         service_cfg = ServiceConfig.from_dict(service_dict)

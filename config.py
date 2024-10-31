@@ -1,11 +1,10 @@
 from dataclasses import dataclass, field
-from decouple import config  # type: ignore
 from pulumi_docker import ContainerHealthcheckArgs, ContainerPortArgs, ContainerVolumeArgs
-from typing import Any, NotRequired, TypedDict, cast
-from utils.convert import convert_to_bytes
+from typing import Any, NotRequired, TypedDict
 
 
 class ServiceDict(TypedDict):
+    """Type definition for service configuration dictionary."""
     name: str       # Required
     image_tag: str  # Required
     keep_locally: NotRequired[bool]
@@ -17,6 +16,7 @@ class ServiceDict(TypedDict):
     memory: NotRequired[int | str]
     cpu_shares: NotRequired[int]
     healthcheck: NotRequired[ContainerHealthcheckArgs]
+
 
 @dataclass
 class ServiceConfig:
@@ -46,6 +46,7 @@ class ServiceConfig:
 
         # Handle memory conversion if it's a string
         if 'memory' in container_config and isinstance(container_config['memory'], str):
+            from utils.convert import convert_to_bytes
             container_config['memory'] = convert_to_bytes(container_config['memory'])
 
         # Set container config
@@ -67,55 +68,3 @@ class ServiceConfig:
     def container_config(self) -> dict[str, Any]:
         """Return the container configuration."""
         return self._container_config
-
-# Example services configuration remains the same
-services: list[ServiceDict] = [
-    {
-        "name": "nginx",
-        "image_tag": "latest",
-        "keep_locally": True,
-        "ports": [ContainerPortArgs(
-            internal=80,
-            external=8080
-        )],
-        "restart": "unless-stopped"
-    },
-    {
-        "name": "redis",
-        "image_tag": "7.4.1-bookworm",
-        "ports": [ContainerPortArgs(
-            internal=6379,
-            external=6379
-        )],
-        "restart": "unless-stopped",
-        "envs": [
-            "REDIS_PASSWORD=secret"
-        ],
-        "volumes": [ContainerVolumeArgs(
-            host_path="/tmp/redis-data",
-            container_path="/data"
-        )]
-    },
-    {
-        "name": "mongo",
-        "image_tag": "8.0.3-noble",
-        "ports": [ContainerPortArgs(
-            internal=27017,
-            external=27017
-        )],
-        "restart": "unless-stopped",
-        "envs": [
-            "MONGO_INITDB_ROOT_USERNAME=user",
-            "MONGO_INITDB_ROOT_PASSWORD=pass"
-        ],
-        "network_mode": "bridge",
-        "memory": "512m",
-        "cpu_shares": 512,
-        "healthcheck": ContainerHealthcheckArgs(
-            tests=["CMD", "mongosh", "--eval", "db.adminCommand('ping')"],
-            interval="30s",
-            timeout="10s",
-            retries=3
-        )
-    }
-]

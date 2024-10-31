@@ -56,7 +56,7 @@ mypy __main__.py
   * `DOCKER_REGISTRY_PASS`
 * Local containers
   * prometheus and grafana
-* Remote containers (node-exporters)
+* Remote containers (prometheus exporters)
 
     | Name          | Image                                                       | Port |
     | ------------- | ----------------------------------------------------------- | ---- |

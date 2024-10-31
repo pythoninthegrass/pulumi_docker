@@ -3,6 +3,8 @@ runtime:
   name: python
   options:
     toolchain: poetry
+    virtualenv: .venv
+    typechecker: mypy
 description: Use the docker provider to setup local and remote containers
 config:
   docker:host:

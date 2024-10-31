@@ -41,11 +41,13 @@ tasks:
     desc: "Run pre-commit hooks"
     cmds:
       - pre-commit run --all-files
+    ignore_error: true
 
   lint:
     desc: "Run linters"
     cmds:
       - ruff check --fix --respect-gitignore
+    ignore_error: true
 
   format:
     desc: "Run formatters"

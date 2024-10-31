@@ -8,6 +8,10 @@ pulumi = ">=3.0"
 pulumi_docker = ">=4.4.3"
 python-decouple = "^3.8"
 
+[tool.poetry.group.dev.dependencies]
+argcomplete = "^3.5.1"
+mypy = "^1.13.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

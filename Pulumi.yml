@@ -9,6 +9,8 @@ description: Use the docker provider to setup local and remote containers
 config:
   docker:host:
     value: unix:///var/run/docker.sock
+  # docker:host:
+  #   value: ssh://user@remote-host:22
   docker:sshOpts:
     value:
         - -o

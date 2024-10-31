@@ -2,7 +2,7 @@
 
 import pulumi
 from pulumi_docker import Container, ContainerArgs, RemoteImage
-from services import ServiceConfig, ServiceDict, services  # type: ignore
+from services import ServiceConfig, ServiceDict, services
 from typing import cast
 
 
@@ -31,7 +31,7 @@ def create_resources(service_cfg: ServiceConfig) -> tuple[RemoteImage, Container
     return image, container
 
 
-def main():
+def main() -> None:
     """Create resources for each service in the services list."""
     for service_dict in services:
         # Convert the flattened config to ServiceConfig

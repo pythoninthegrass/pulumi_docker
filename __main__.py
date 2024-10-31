@@ -1,58 +1,48 @@
 #!/usr/bin/env python
 
 import pulumi
-from decouple import config
-from pulumi_docker import RemoteImage, Container
-from typing import Dict, Any, Tuple
-
-image = config('IMAGE', default='nginx')
-tag = config('TAG', default='latest')
-container_port = config('CONTAINER_PORT', default=80, cast=int)
-host_port = config('HOST_PORT', default=8080, cast=int)
+from pulumi_docker import Container, ContainerArgs, RemoteImage
+from services import ServiceConfig, ServiceDict, services  # type: ignore
+from typing import cast
 
 
-def load_config() -> Dict[str, Any]:
-    """Load configuration from environment with sensible defaults"""
-    return {
-        "image": {
-            "name": f"{image}:{tag}",
-            "keep_locally": True
-        },
-        "container": {
-            "name": f"my-{image}",
-            "ports": [{
-                "internal": container_port,
-                "external": host_port
-            }]
-        }
-    }
-
-
-def create_resources(cfg: Dict[str, Any]) -> Tuple[RemoteImage, Container]:
-    """Create Pulumi resources from configuration"""
+def create_resources(service_cfg: ServiceConfig) -> tuple[RemoteImage, Container]:
+    """Create Pulumi resources from service configuration."""
+    # Create the image resource
     image = RemoteImage(
-        cfg["container"]["name"],
-        name=cfg["image"]["name"],
-        keep_locally=cfg["image"]["keep_locally"]
+        service_cfg.container_name,
+        name=service_cfg.image_name,
+        keep_locally=service_cfg.keep_locally
     )
 
-    container = Container(
-        cfg["container"]["name"],
+    # Create container args with proper typing
+    container_args = ContainerArgs(
         image=image.repo_digest,
-        ports=cfg["container"]["ports"]
+        name=service_cfg.container_name,
+        **service_cfg.container_config
+    )
+
+    # Create the container resource
+    container = Container(
+        service_cfg.container_name,
+        container_args
     )
 
     return image, container
 
 
 def main():
-    # Load config and create resources
-    config = load_config()
-    image, container = create_resources(config)
+    """Create resources for each service in the services list."""
+    for service_dict in services:
+        # Convert the flattened config to ServiceConfig
+        service_cfg = ServiceConfig.from_dict(service_dict)
 
-    # Export values
-    pulumi.export('container_name', container.name)
+        # Create the resources
+        image, container = create_resources(service_cfg)
+
+        # Export container name
+        pulumi.export(f"{service_cfg.name}_container_name", container.name)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
